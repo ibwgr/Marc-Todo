@@ -42,7 +42,7 @@ public class ItemController {
         server.post("/items", (request, response) -> {
             Item item = jsonSerializer.deserialize(request.body(), new TypeReference<Item>() {
             });
-            Item newItem = service.create(007L, item);
+            Item newItem = service.create(item.userId, item);
             response.status(HttpStatus.CREATED_201);
             return newItem;
 

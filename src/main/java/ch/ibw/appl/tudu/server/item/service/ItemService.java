@@ -6,6 +6,7 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemService {
     private final List<Item> items;
@@ -79,15 +80,8 @@ public class ItemService {
     }
 
     public List<Item> geByUserIdAndFilter(long requestedUserId, String filter) {
-        List<Item> matches = new ArrayList<>();
-        List<Item> matchesFilter;
-        matchesFilter = geByFilter(filter);
-
-            for (Item item : matchesFilter) {
-                if (item.userId.equals(requestedUserId)) {
-                    matches.add(item);
-                }
-            }
+        List<Item> matches = getByUserId(requestedUserId);
+        matches.retainAll(geByFilter(filter));
 
         return matches;
     }
