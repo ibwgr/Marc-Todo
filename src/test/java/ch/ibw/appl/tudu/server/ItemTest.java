@@ -3,6 +3,7 @@ package ch.ibw.appl.tudu.server;
 import ch.ibw.appl.tudu.server.item.model.Item;
 import ch.ibw.appl.tudu.server.shared.FunctionalTest;
 import ch.ibw.appl.tudu.server.shared.service.JSONSerializer;
+import ch.ibw.appl.tudu.server.user.model.User;
 import com.despegar.http.client.HttpResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.jetty.http.HttpStatus;
@@ -158,5 +159,30 @@ public class ItemTest extends FunctionalTest {
         List<Item> deserializedItems = new JSONSerializer().deserialize(body, new TypeReference<ArrayList<Item>>() {});
 
         Assert.assertEquals(3, deserializedItems.size());
+    }
+
+    @Test
+    public void createNewUserAndNewItemIsOK() {
+        HttpResponse httpResponseUser = this.executePost("/users", new User("Peter Mafiosi"));
+
+        Assert.assertEquals(HttpStatus.CREATED_201, httpResponseUser.code());
+
+        String bodyUser = new String(httpResponseUser.body());
+        User deserializedUser = new JSONSerializer().deserialize(bodyUser, new TypeReference<User>() {});
+
+        httpResponseUser = this.executeGet("/users/" + deserializedUser.id);
+        Assert.assertEquals(HttpStatus.OK_200, httpResponseUser.code());
+
+        HttpResponse httpResponseItem = this.executePost("/users/" + deserializedUser.id + "/items", new Item("new Item"));
+
+        Assert.assertEquals(HttpStatus.CREATED_201, httpResponseItem.code());
+
+        httpResponseItem = this.executeGet("/users/" + deserializedUser.id + "/items");
+        Assert.assertEquals(HttpStatus.OK_200, httpResponseItem.code());
+
+        String bodyItem = new String(httpResponseItem.body());
+        List<Item> deserializedItems = new JSONSerializer().deserialize(bodyItem, new TypeReference<ArrayList<Item>>() {});
+
+        Assert.assertEquals(1, deserializedItems.size());
     }
 }

@@ -79,19 +79,16 @@ public class ItemService {
     }
 
     public List<Item> geByUserIdAndFilter(long requestedUserId, String filter) {
-        String[] keyValue = filter.split(":");
         List<Item> matches = new ArrayList<>();
+        List<Item> matchesFilter;
+        matchesFilter = geByFilter(filter);
 
-        if (keyValue[0].equalsIgnoreCase("description")) {
-            String searchTerm = keyValue[1].toLowerCase();
-
-            for (Item item : items) {
-                if (item.description.toLowerCase().contains(searchTerm) && item.userId.equals(requestedUserId)) {
+            for (Item item : matchesFilter) {
+                if (item.userId.equals(requestedUserId)) {
                     matches.add(item);
                 }
             }
 
-        }
         return matches;
     }
 
