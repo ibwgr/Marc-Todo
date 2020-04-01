@@ -28,10 +28,31 @@ public class ItemController {
 
         }, jsonSerializer::serialize);
 
+        server.get("/users/:id/items", (request, response) -> {
+            long requestedUserId = Long.parseLong(request.params("id"));
+            String filter = request.queryParamOrDefault("filter", "");
+            if(!filter.isEmpty()) {
+                return service.geByUserIdAndFilter(requestedUserId, filter);
+            }
+            return service.getByUserId(requestedUserId);
+
+
+        }, jsonSerializer::serialize);
+
         server.post("/items", (request, response) -> {
             Item item = jsonSerializer.deserialize(request.body(), new TypeReference<Item>() {
             });
-            Item newItem = service.create(item);
+            Item newItem = service.create(item.userId, item);
+            response.status(HttpStatus.CREATED_201);
+            return newItem;
+
+        }, jsonSerializer::serialize);
+
+        server.post("/users/:id/items", (request, response) -> {
+            Item item = jsonSerializer.deserialize(request.body(), new TypeReference<Item>() {
+            });
+            long requestedUserId = Long.parseLong(request.params("id"));
+            Item newItem = service.create(requestedUserId, item);
             response.status(HttpStatus.CREATED_201);
             return newItem;
 

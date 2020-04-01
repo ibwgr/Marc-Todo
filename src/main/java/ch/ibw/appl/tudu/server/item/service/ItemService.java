@@ -6,6 +6,7 @@ import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ItemService {
     private final List<Item> items;
@@ -16,16 +17,17 @@ public class ItemService {
         if (isTest) {
             Item item1 = new Item("Hallo World Item");
             Item item2 = new Item("Einkaufen für Geburtstag");
-            this.create(item1);
-            this.create(item2);
+            this.create(007L, item1);
+            this.create(007L, item2);
         }
     }
 
-    public Item create(Item item) {
+    public Item create(Long userId, Item item) {
         if (item.description == null || item.description.isEmpty()) {
             throw new ValidationError("description can not be empty");
         }
         item.id = ++nextId;
+        item.userId = userId;
         items.add(item);
         return item;
     }
@@ -63,6 +65,24 @@ public class ItemService {
             }
 
         }
+        return matches;
+    }
+
+    public List<Item> getByUserId(Long requestedUserId) {
+        List<Item> matches = new ArrayList<>();
+
+        for (Item item : items) {
+            if (item.userId == requestedUserId) {
+                matches.add(item);
+            }
+        }
+        return matches;
+    }
+
+    public List<Item> geByUserIdAndFilter(long requestedUserId, String filter) {
+        List<Item> matches = getByUserId(requestedUserId);
+        matches.retainAll(geByFilter(filter));
+
         return matches;
     }
 
