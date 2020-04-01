@@ -119,4 +119,44 @@ public class ItemTest extends FunctionalTest {
         String body = new String(response.body());
         Assert.assertTrue(body.contains("message"));
     }
+
+    @Test
+    public void getItemsByUsersIdIsOK(){
+        HttpResponse httpResponse = this.executeGet("/users/007/items");
+
+        Assert.assertEquals(200, httpResponse.code());
+
+        String body = new String(httpResponse.body());
+        List<Item> deserializedItems = new JSONSerializer().deserialize(body, new TypeReference<ArrayList<Item>>() {});
+
+        Assert.assertEquals( "Hallo World Item", deserializedItems.get(0).description);
+        Assert.assertEquals(2, deserializedItems.size());
+    }
+
+    @Test
+    public void searchByUserIdAndDescriptionWithMatches(){
+        HttpResponse httpResponse = this.executeGet("/users/007/items?filter=description:füR");
+
+        Assert.assertEquals(HttpStatus.OK_200, httpResponse.code());
+
+        String body = new String(httpResponse.body());
+        List<Item> deserializedItems = new JSONSerializer().deserialize(body, new TypeReference<ArrayList<Item>>() {});
+
+        Assert.assertEquals(1, deserializedItems.size());
+    }
+
+    @Test
+    public void createWithUserIdUnexistingItemIsOK(){
+        HttpResponse httpResponse = this.executePost("/users/007/items", new Item("new Item"));
+
+        Assert.assertEquals(HttpStatus.CREATED_201, httpResponse.code());
+
+        httpResponse = this.executeGet("/users/007/items");
+        Assert.assertEquals(HttpStatus.OK_200, httpResponse.code());
+
+        String body = new String(httpResponse.body());
+        List<Item> deserializedItems = new JSONSerializer().deserialize(body, new TypeReference<ArrayList<Item>>() {});
+
+        Assert.assertEquals(3, deserializedItems.size());
+    }
 }
